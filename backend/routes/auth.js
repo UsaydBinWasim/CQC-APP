@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
 // Generate unique referral code
 const generateReferralCode = () => {
@@ -48,10 +50,14 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // Create new user (plain text password as per requirements)
+
+    // Hash password before saving
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     const user = new User({
       email: email.toLowerCase(),
-      password, // Stored as plain text
+      password: hashedPassword,
       referralCode,
       sponsorCode: sponsorCode || null
     });
@@ -104,8 +110,10 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Check password (plain text comparison as per requirements)
-    if (user.password !== password) {
+
+    // Compare hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'

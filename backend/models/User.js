@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-    // Note: Stored as plain text as per requirements
+    // Note: Stored as bcrypt hash
   },
   referralCode: {
     type: String,
